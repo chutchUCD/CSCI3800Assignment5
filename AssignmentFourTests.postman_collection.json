@@ -1,0 +1,183 @@
+{
+	"variables": [],
+	"info": {
+		"name": "AssignmentFourTests",
+		"_postman_id": "5f9343a4-7818-e02e-424e-c64186ff64f8",
+		"description": "",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Get movies list",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"tests[\"Status code is 200\"] = responseCode.code === 200;",
+							"var resp = JSON.parse(responseBody)",
+							" console.log(typeof(responseBody))",
+							"tests[\"Has at least five movies.\"] = resp.length>=5;",
+							"tests[\"Contains 'Goldeneye'.\"] = responseBody.has(\"Goldeneye\")"
+						]
+					}
+				}
+			],
+			"request": {
+				"url": "http://chutch-test.apigee.net/moviesucdmng/movies",
+				"method": "GET",
+				"header": [],
+				"body": {},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "Get Movies by title",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"var resp = JSON.parse(responseBody)",
+							"tests[\"Contains two entries\"] = resp.length === 2",
+							"tests[\"Status code is 200\"] = responseCode.code === 200;",
+							"tests[\"Title is Solaris:\"] = resp[0].mtitle===\"Solaris\""
+						]
+					}
+				}
+			],
+			"request": {
+				"url": "http://chutch-test.apigee.net/moviesucdmng/movietitle?title=\"solaris\"",
+				"method": "GET",
+				"header": [],
+				"body": {},
+				"description": "Query for a movie title."
+			},
+			"response": []
+		},
+		{
+			"name": "Add deadpool to database.",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"if (responseCode==200){",
+							"    tests[\"Movie Added To database\"]",
+							"} else{",
+							"    if (responseCode ==403 && responseBody== \"Bad request. Object exists.\"){",
+							"        tests[\"Movie not duplicated in database. Run the delete test.\"]",
+							"    } else{",
+							"        tests[\"Unexpected Response, movie not added to database.\"] = undefined;",
+							"    }",
+							"}"
+						]
+					}
+				}
+			],
+			"request": {
+				"url": "http://chutch-test.apigee.net/moviesucdmng/addmovie",
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"title\": \"Deadpool\",\n\t\"year\":2016,\n\t\"actors\":[\"Ryan Reynolds\", \"Morena Baccarin\", \"T.J. Miller\"]\n}"
+				},
+				"description": "Post a new movie if the movie has not been posted. Adds Deadpool"
+			},
+			"response": []
+		},
+		{
+			"name": "Get deadpool id",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"if(responseCode.code==200){",
+							"    resp = JSON.parse(responseBody)",
+							"    postman.setEnvironmentVariable(\"deadpoolid\", resp[0]._id);",
+							"}else{",
+							"    tests[\"Deadpool isn't in db\"]=false",
+							"}",
+							""
+						]
+					}
+				}
+			],
+			"request": {
+				"url": "http://chutch-test.apigee.net/moviesucdmng\\movietitle?title=\"deadpool\"",
+				"method": "GET",
+				"header": [],
+				"body": {},
+				"description": "In case you don't want to try and get it with a post request."
+			},
+			"response": []
+		},
+		{
+			"name": "Delete test.",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"tests[\"Test is valid because A Deadpool ID is set.\"]=postman.getEnvironmentVariable(\"deadpoolid\")",
+							"if(postman.getEnvironmentVariable(\"deadpoolid\")){",
+							"    tests[\"Status code is 200\"] = responseCode.code === 200;",
+							"}",
+							"",
+							"postman.setEnvironmentVariable(\"deadpoolid\", undefined);"
+						]
+					}
+				}
+			],
+			"request": {
+				"url": "http://chutch-test.apigee.net/moviesucdmng/deletemovie?mid={{deadpoolid}}",
+				"method": "DELETE",
+				"header": [],
+				"body": {},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "http://chutch-test.apigee.net/moviesucdmng/movieid?mid=58e96c83f36d285cc14460fb",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"var resp = JSON.parse(responseBody)",
+							"",
+							"tests[\"Id Properties match\"] = resp._id===\"58e96c83f36d285cc14460fb\";",
+							"tests[\"Title is Solaris\"] = resp.mtitle===\"Solaris\"",
+							"",
+							"tests[\"Status code is 200\"] = responseCode.code === 200;"
+						]
+					}
+				}
+			],
+			"request": {
+				"url": "http://chutch-test.apigee.net/moviesucdmng/movieid?mid=58e96c83f36d285cc14460fb",
+				"method": "GET",
+				"header": [],
+				"body": {},
+				"description": ""
+			},
+			"response": []
+		}
+	]
+}
